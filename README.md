@@ -25,3 +25,5 @@ tim.run('<your bot client token here>')
 ```
 
 ## Contributing:
+
+Please make all development commits to the `devel` branch. If you're implementing a major new feature, branch off of `devel` to do so.
