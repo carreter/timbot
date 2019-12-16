@@ -61,7 +61,7 @@ class TimBot(discord.Client):
             command = self._commands.get(command_name, None)
 
             if command:
-                await command.run_command(self.config, message)
+                self._config = await command.run_command(self.config, message)
 
 
 class Context():
@@ -106,14 +106,18 @@ class BotCommand():
         """ Returns the help of the command as a Discord-message formatted string. """
         return self._help.discord_formatted()
 
-    async def run_command(self, config: dict, message: Message):
+    async def run_command(self, config: dict, message: Message) -> dict:
         """
         Invokes the function associated with the command with a new Context object
         as the argument.
         """
-        await self._command_function(Context(config, message))
+        new_config = await self._command_function(Context(config, message)) # Call the command's function
+        if not new_config: # If no config was returned from command, return the old config
+            return config
+        else:
+            return new_config
 
-    async def _command_function(self, ctx: Context):
+    async def _command_function(self, ctx: Context) -> dict:
         """
         This is the function that is run when a command is invoked.
         The Context object contains all relevant info.
