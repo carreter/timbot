@@ -111,13 +111,13 @@ class BotCommand():
         Invokes the function associated with the command with a new Context object
         as the argument.
         """
-        new_config = await self._command_function(Context(config, message)) # Call the command's function
+        new_config = await self._command_function(config, Context(config, message)) # Call the command's function
         if not new_config: # If no config was returned from command, return the old config
             return config
         else:
             return new_config
 
-    async def _command_function(self, ctx: Context) -> dict:
+    async def _command_function(self, config: dict, ctx: Context) -> dict:
         """
         This is the function that is run when a command is invoked.
         The Context object contains all relevant info.
