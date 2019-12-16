@@ -4,16 +4,33 @@ from __future__ import annotations
 import discord
 from typing import List
 import logging
+import copy
 
 LOGGER = logging.getLogger(__name__)
 
 class TimBot(discord.Client):
-    def __init__(self, guild_ID: int, prefix: str = '!', **options):
+    def __init__(self, config: dict, **options):
         super().__init__(**options) # Create a discord client object
 
-        self._guild_ID = guild_ID # Get the main guild the bot instance is to be run on
+        self._guild_ID = config['bot']['guild_ID'] # Get the main guild the bot instance is to be run on
+        
+        prefix = config['bot'].get('prefix', None) # Get prefix setting
+        if not prefix: # Default prefix if not set: '!'
+            prefix = '!'
+            config['bot']['prefix'] = prefix
         self._prefix = prefix
-        self._commands = {}
+
+        self._commands = {} # Initialize empty commands dict
+        self._config = copy.deepcopy(config) # Save config on the bot instance
+
+    # Getters and setters here
+    @property
+    def prefix(self) -> str:
+        return self._prefix
+
+    @property
+    def config(self) -> dict:
+        return copy.deepcopy(self._config)
 
     # Bot configuration
     def add_command(self, command: BotCommand ):
@@ -44,24 +61,20 @@ class TimBot(discord.Client):
             command = self._commands.get(command_name, None)
 
             if command:
-                await command.run_command(self, message)
+                await command.run_command(self.config, message)
 
-    # Getters and setters here
-    @property
-    def prefix(self) -> str:
-        return self._prefix
 
 class Context():
     """ Object to hold information passed to a command. """
-    def __init__(self, bot: TimBot, message: Message):
+    def __init__(self, config: dict, message: Message):
         self.message = message
         self.guild = message.guild
         self.channel = message.channel
-        self.bot = bot
+        self.config = config
         self.author = message.author
 
         # Remove prefix from message and split into list for args
-        args = message.content[len(self.bot.prefix):].split()
+        args = message.content[len(config['bot']['prefix']):].split()
         if len(args) > 1:
             self.args = args[1:]
         else:
@@ -93,12 +106,12 @@ class BotCommand():
         """ Returns the help of the command as a Discord-message formatted string. """
         return self._help.discord_formatted()
 
-    async def run_command(self, bot: TimBot, message: Message):
+    async def run_command(self, config: dict, message: Message):
         """
         Invokes the function associated with the command with a new Context object
         as the argument.
         """
-        await self._command_function(Context(bot, message))
+        await self._command_function(Context(config, message))
 
     async def _command_function(self, ctx: Context):
         """
