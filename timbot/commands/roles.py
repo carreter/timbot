@@ -1,5 +1,5 @@
 """ Role management commands. """
-from timbot.commands.core import BotCommand, Context, CommandHelp
+from timbot.commands import BotCommand, Context, CommandHelp
 import discord.utils
 import asyncio
 

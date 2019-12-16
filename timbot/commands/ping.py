@@ -1,5 +1,5 @@
 """ Simple ping-pong command. """
-from timbot.commands.core import BotCommand, Context, CommandHelp
+from timbot.commands import BotCommand, Context, CommandHelp
 
 class PingCommand(BotCommand):
     """
